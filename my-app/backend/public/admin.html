@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Mi Tienda</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        header { background: #333; color: #fff; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; }
+        header a { color: #fff; text-decoration: none; }
+        nav a { color: #fff; text-decoration: none; margin-left: 1rem; padding: 0.5rem 1rem; border-radius: 4px; background: #555; }
+        nav a:hover { background: #777; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        h2 { margin-bottom: 1.5rem; color: #333; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+        .tab-btn { padding: 0.75rem 1.5rem; border: none; background: #ddd; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        .tab-btn.active { background: #333; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #333; color: #fff; }
+        tr:hover { background: #f9f9f9; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .btn-edit { background: #ffc107; color: #333; margin-right: 0.5rem; }
+        .btn-delete { background: #dc3545; color: #fff; }
+        .btn-add { background: #28a745; color: #fff; margin-bottom: 1rem; }
+        .btn-save { background: #007bff; color: #fff; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; }
+        .modal-content h3 { margin-bottom: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .loading { text-align: center; padding: 2rem; color: #666; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="/">Mi Tienda</a> - Panel Admin</h1>
+        <nav>
+            <a href="/">Volver a la tienda</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('products')">Productos</button>
+            <button class="tab-btn" onclick="showTab('categories')">Categorias</button>
+        </div>
+
+        <div id="tab-products" class="tab-content active">
+            <h2>Gestion de Productos</h2>
+            <button class="btn btn-add" onclick="openProductModal()">+ Nuevo Producto</button>
+            <div id="productsTableContainer"></div>
+        </div>
+
+        <div id="tab-categories" class="tab-content">
+            <h2>Gestion de Categorias</h2>
+            <button class="btn btn-add" onclick="openCategoryModal()">+ Nueva Categoria</button>
+            <div id="categoriesTableContainer"></div>
+        </div>
+    </div>
+
+    <!-- Modal Producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="productModalTitle">Nuevo Producto</h3>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="prodNombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Precio</label>
+                    <input type="number" id="prodPrecio" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripcion</label>
+                    <textarea id="prodDescripcion" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URL de Imagen</label>
+                    <input type="url" id="prodImageUrl">
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="prodCategoryId">
+                        <option value="">Sin categoria</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-save">Guardar</button>
+                <button type="button" class="btn btn-delete" onclick="closeModal('productModal')" style="margin-left:0.5rem;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Categoria -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h3 id="categoryModalTitle">Nueva Categoria</h3>
+            <form id="categoryForm">
+                <input type="hidden" id="catId">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="catNombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripcion</label>
+                    <textarea id="catDescripcion" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-save">Guardar</button>
+                <button type="button" class="btn btn-delete" onclick="closeModal('categoryModal')" style="margin-left:0.5rem;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let token = localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || user.role !== 'ADMIN') {
+            window.location.href = '/login.html';
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadProducts() {
+            const container = document.getElementById('productsTableContainer');
+            container.innerHTML = '<div class="loading">Cargando...</div>';
+            try {
+                const res = await fetch(API_URL + '/products');
+                const data = await res.json();
+                if (data.success) renderProductsTable(data.data);
+            } catch (err) {
+                container.innerHTML = 'Error al cargar productos';
+            }
+        }
+
+        function renderProductsTable(products) {
+            const container = document.getElementById('productsTableContainer');
+            if (products.length === 0) {
+                container.innerHTML = '<p>No hay productos</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Categoria</th><th>Acciones</th></tr></thead><tbody>';
+            products.forEach(p => {
+                const catName = p.category ? p.category.nombre : '-';
+                html += '<tr><td>' + p.id + '</td><td>' + p.nombre + '</td><td>$' + parseFloat(p.precio).toFixed(2) + '</td><td>' + catName + '</td>' +
+                    '<td><button class="btn btn-edit" onclick="editProduct(' + p.id + ')">Editar</button>' +
+                    '<button class="btn btn-delete" onclick="deleteProduct(' + p.id + ')">Eliminar</button></td></tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function openProductModal(id) {
+            document.getElementById('productModal').style.display = 'flex';
+            document.getElementById('productModalTitle').textContent = id ? 'Editar Producto' : 'Nuevo Producto';
+            document.getElementById('productId').value = id || '';
+            
+            try {
+                const res = await fetch(API_URL + '/categories');
+                const data = await res.json();
+                const select = document.getElementById('prodCategoryId');
+                select.innerHTML = '<option value="">Sin categoria</option>';
+                if (data.success) {
+                    data.data.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat.id;
+                        opt.textContent = cat.nombre;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {}
+
+            if (id) {
+                const res = await fetch(API_URL + '/products/' + id);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('prodNombre').value = data.data.nombre;
+                    document.getElementById('prodPrecio').value = data.data.precio;
+                    document.getElementById('prodDescripcion').value = data.data.descripcion || '';
+                    document.getElementById('prodImageUrl').value = data.data.imageUrl || '';
+                    document.getElementById('prodCategoryId').value = data.data.categoryId || '';
+                }
+            } else {
+                document.getElementById('productForm').reset();
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('productId').value;
+            const body = {
+                nombre: document.getElementById('prodNombre').value,
+                precio: document.getElementById('prodPrecio').value,
+                descripcion: document.getElementById('prodDescripcion').value,
+                imageUrl: document.getElementById('prodImageUrl').value,
+                categoryId: document.getElementById('prodCategoryId').value || null
+            };
+            const url = id ? (API_URL + '/products/' + id) : (API_URL + '/products');
+            const method = id ? 'PUT' : 'POST';
+            
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            closeModal('productModal');
+            loadProducts();
+        });
+
+        async function editProduct(id) {
+            await openProductModal(id);
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Eliminar producto?')) return;
+            await fetch(API_URL + '/products/' + id, { method: 'DELETE' });
+            loadProducts();
+        }
+    </script>
+
+    <script>
+        async function loadCategories() {
+            const container = document.getElementById('categoriesTableContainer');
+            container.innerHTML = '<div class="loading">Cargando...</div>';
+            try {
+                const res = await fetch(API_URL + '/categories');
+                const data = await res.json();
+                if (data.success) renderCategoriesTable(data.data);
+            } catch (err) {
+                container.innerHTML = 'Error al cargar categorias';
+            }
+        }
+
+        function renderCategoriesTable(categories) {
+            const container = document.getElementById('categoriesTableContainer');
+            if (categories.length === 0) {
+                container.innerHTML = '<p>No hay categorias</p>';
+                return;
+            }
+            let html = '<table><thead><tr><th>ID</th><th>Nombre</th><th>Descripcion</th><th>Productos</th><th>Acciones</th></tr></thead><tbody>';
+            categories.forEach(c => {
+                const prodCount = c.products ? c.products.length : 0;
+                html += '<tr><td>' + c.id + '</td><td>' + c.nombre + '</td><td>' + (c.descripcion || '-') + '</td><td>' + prodCount + '</td>' +
+                    '<td><button class="btn btn-edit" onclick="editCategory(' + c.id + ')">Editar</button>' +
+                    '<button class="btn btn-delete" onclick="deleteCategory(' + c.id + ')">Eliminar</button></td></tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function openCategoryModal(id) {
+            document.getElementById('categoryModal').style.display = 'flex';
+            document.getElementById('categoryModalTitle').textContent = id ? 'Editar Categoria' : 'Nueva Categoria';
+            document.getElementById('catId').value = id || '';
+            document.getElementById('catNombre').value = '';
+            document.getElementById('catDescripcion').value = '';
+
+            if (id) {
+                const res = await fetch(API_URL + '/categories/' + id);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('catNombre').value = data.data.nombre;
+                    document.getElementById('catDescripcion').value = data.data.descripcion || '';
+                }
+            }
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('catId').value;
+            const body = {
+                nombre: document.getElementById('catNombre').value,
+                descripcion: document.getElementById('catDescripcion').value
+            };
+            const url = id ? (API_URL + '/categories/' + id) : (API_URL + '/categories');
+            const method = id ? 'PUT' : 'POST';
+            
+            await fetch(url, {
+                method,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(body)
+            });
+            closeModal('categoryModal');
+            loadCategories();
+        });
+
+        async function editCategory(id) {
+            await openCategoryModal(id);
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Eliminar categoria?')) return;
+            await fetch(API_URL + '/categories/' + id, { 
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            loadCategories();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+
+        loadProducts();
+        loadCategories();
+    </script>
+</body>
+</html>
+
+
