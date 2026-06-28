@@ -21,8 +21,8 @@ const dialectOptions = isInternal ? {} : { ssl: { rejectUnauthorized: false } };
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST, port: DB_PORT, dialect: 'mysql',
   logging: false, dialectOptions,
-  pool: { max: 5, min: 0, acquire: 60000, idle: 10000 },
-  retry: { max: 3 }
+  pool: { max: 5, min: 0, acquire: 10000, idle: 10000 },
+  retry: { max: 1 }
 });
 
 module.exports = sequelize;

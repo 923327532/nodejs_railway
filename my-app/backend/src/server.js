@@ -5,7 +5,7 @@ const sequelize = require('./config/database');
 
 const PORT = process.env.PORT || 3000;
 
-async function startServer() {
+async function connectDB() {
     console.log('Intentando conectar a la base de datos...');
     console.log('   Host:', process.env.DB_HOST || process.env.MYSQLHOST || 'no definido');
     console.log('   Port:', process.env.DB_PORT || process.env.MYSQLPORT || 'no definido');
@@ -20,12 +20,13 @@ async function startServer() {
         console.log('Modelos sincronizados con la base de datos.');
     } catch (error) {
         console.error('No se pudo conectar a la base de datos:', error.message);
-        console.error('El servidor igual va a iniciar para diagnosticar.');
     }
-
-    app.listen(PORT, () => {
-        console.log('Servidor corriendo en el puerto ' + PORT);
-    });
 }
 
-startServer();
+// El servidor arranca INMEDIATAMENTE
+app.listen(PORT, () => {
+    console.log('Servidor corriendo en el puerto ' + PORT);
+});
+
+// La DB se conecta en segundo plano
+connectDB();
