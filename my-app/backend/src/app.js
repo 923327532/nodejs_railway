@@ -12,10 +12,11 @@ const allowedOrigins = [
     'http://localhost:3001',
     'http://localhost:5173',
     'http://localhost:4200',
+    'https://railwayback.vercel.app',
 ];
 
 // Agregar FRONTEND_URL desde variable de entorno (para Vercel)
-if (process.env.FRONTEND_URL) {
+if (process.env.FRONTEND_URL && allowedOrigins.indexOf(process.env.FRONTEND_URL) === -1) {
     allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
