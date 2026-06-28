@@ -30,19 +30,23 @@ export default function LoginPage() {
 
   return (
     <div className="form-container">
-      <h1>Iniciar Sesion</h1>
+      <div className="form-header">
+        <div className="form-icon">🔐</div>
+        <h1>Iniciar Sesion</h1>
+        <p>Ingresa tus credenciales para acceder</p>
+      </div>
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Correo electronico</label>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="tu@email.com" />
         </div>
         <div className="form-group">
           <label htmlFor="password">Contrasena</label>
-          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Tu contrasena" />
+          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Ingresa tu contrasena" />
         </div>
-        <button type="submit" className="btn btn-login">Iniciar Sesion</button>
+        <button type="submit" className="btn btn-primary">Iniciar Sesion</button>
       </form>
       <div className="form-footer">
         <Link href="/register">No tienes cuenta? Registrate</Link>

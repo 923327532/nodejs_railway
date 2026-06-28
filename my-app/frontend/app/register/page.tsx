@@ -36,23 +36,27 @@ export default function RegisterPage() {
 
   return (
     <div className="form-container">
-      <h1>Crear Cuenta</h1>
+      <div className="form-header">
+        <div className="form-icon">📝</div>
+        <h1>Crear Cuenta</h1>
+        <p>Registrate para empezar a comprar</p>
+      </div>
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="nombre">Nombre</label>
+          <label htmlFor="nombre">Nombre completo</label>
           <input id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required placeholder="Tu nombre" />
         </div>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Correo electronico</label>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="tu@email.com" />
         </div>
         <div className="form-group">
           <label htmlFor="password">Contrasena</label>
           <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="Minimo 6 caracteres" />
         </div>
-        <button type="submit" className="btn btn-success">Registrarse</button>
+        <button type="submit" className="btn btn-primary">Crear Cuenta</button>
       </form>
       <div className="form-footer">
         <Link href="/login">Ya tienes cuenta? Inicia sesion</Link>
