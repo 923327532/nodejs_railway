@@ -55,6 +55,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </header>
         <main className="container">{children}</main>
+        <footer className="footer">
+          &copy; {new Date().getFullYear()} Mi Tienda - Todos los derechos reservados
+        </footer>
       </body>
     </html>
   );

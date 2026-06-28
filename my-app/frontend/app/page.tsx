@@ -50,7 +50,10 @@ export default function HomePage() {
       {loading ? (
         <div className="loading">Cargando productos...</div>
       ) : products.length === 0 ? (
-        <p style={{ textAlign: 'center', color: '#666' }}>No hay productos disponibles</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">📦</div>
+          <p>No hay productos disponibles</p>
+        </div>
       ) : (
         <div className="products-grid">
           {products.map((product) => (
