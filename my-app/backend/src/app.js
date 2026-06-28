@@ -12,18 +12,18 @@ const allowedOrigins = [
     'http://localhost:3001',
     'http://localhost:5173',
     'http://localhost:4200',
-    'https://railwayback.vercel.app',
 ];
 
-// Agregar FRONTEND_URL desde variable de entorno (para Vercel)
-if (process.env.FRONTEND_URL && allowedOrigins.indexOf(process.env.FRONTEND_URL) === -1) {
+if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
 }
-
 
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
+        if (origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
