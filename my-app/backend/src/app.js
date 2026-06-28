@@ -50,6 +50,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Health check para Railway
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 app.use((req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });
 });

@@ -5,6 +5,15 @@ const sequelize = require('./config/database');
 
 const PORT = process.env.PORT || 3000;
 
+// Manejo de errores globales para que no se caiga el proceso
+process.on('uncaughtException', (err) => {
+    console.error('Error no capturado:', err.message);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Promesa rechazada:', err.message);
+});
+
 async function connectDB() {
     console.log('Intentando conectar a la base de datos...');
     console.log('   Host:', process.env.DB_HOST || process.env.MYSQLHOST || 'no definido');
