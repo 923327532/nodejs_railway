@@ -1,2 +1,0 @@
-STATUS: 502
-BODY: {"status":"error","code":502,"message":"Application failed to respond","request_id":"WowieHOASLOcnuxKnPRhug"}
