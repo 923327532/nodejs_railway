@@ -48,6 +48,11 @@ export default function LoginPage() {
         </div>
         <button type="submit" className="btn btn-primary">Iniciar Sesion</button>
       </form>
+      <div style={{marginTop:'1rem',padding:'0.75rem',background:'#fef3c7',borderRadius:'8px',fontSize:'0.8rem',color:'#92400e',textAlign:'center'}}>
+        <strong>Admin de prueba:</strong><br/>
+        Email: admin@tienda.com<br/>
+        Pass: admin123
+      </div>
       <div className="form-footer">
         <Link href="/register">No tienes cuenta? Registrate</Link>
       </div>
